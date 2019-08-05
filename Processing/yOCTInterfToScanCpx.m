@@ -16,6 +16,8 @@ function [scanCpx,dimensions] = yOCTInterfToScanCpx (varargin)
 %       - 'interpMethod', see help yOCTEquispaceInterf for interpetation
 %           methods
 %		- 'n' - medium refractive index. default: 1.33
+%		- 'peakOnly' - if set to true, only returns dimensions update. Default: false
+%			dimensions = yOCTInterfToScanCpx (varargin)
 %OUTPUT
 %   BScanCpx - where lambda dimension is replaced by z
 %	dimensions - updated dimesions, adding dimesions for z
@@ -36,9 +38,14 @@ dispersionParameterA = 100; %Default Value
 band = [];
 interpMethod = []; %Default
 n = 1.33;
+peakOnly = false;
 for i=3:2:length(varargin)
    eval([varargin{i} ' = varargin{i+1};']); %<-TBD - there should be a safer way
 end
+
+if (peakOnly)
+	interferogram=interferogram(:,1,1,1,1,1); %In peak only mode only process one A Scan
+end	
 
 %% Check if interferogram is equispaced. If not, equispace it before processing
 lambda = dimensions.lambda.values;
@@ -114,3 +121,7 @@ zStepSizeAir = 1/2*lambda^2/dlambda; %1/2 factor is because light goes back and 
 zStepSizeMedium = zStepSizeAir/n;
 dimensions.z.values = linspace(0,zStepSizeMedium*N/2,N/2); 
 dimensions.z.units = 'microns [in medium]';
+
+if (peakOnly)
+	scanCpx = dimensions;
+end	

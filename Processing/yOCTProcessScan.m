@@ -71,8 +71,14 @@ end
 if (runProcessScanInParallel)
     p = gcp;
 end
-dimensions = yOCTLoadInterfFromFile([{inputDataFolder}, parameters {'PeakOnly'},{true}]);
+dimensions = yOCTLoadInterfFromFile([{inputDataFolder}, parameters, {'PeakOnly'}, {true}]);
 [~, ~, sizeY, AScanAvgN, BScanAvgN] = yOCTLoadInterfFromFile_DataSizing(dimensions);
+
+%Update dimensions to include for zeros
+tmp = zeros(size(dimensions.lambda.values(:)));
+dimensions1 = yOCTInterfToScanCpx ([{tmp}, {dimensions}, parameters, {'peakOnly'},{true}])
+dimensions1 = yOCTInterfToScanCpx ([z(:), dimensions {'PeakOnly'},{true}])
+dimensions.z =  dimensions1.z;
 
 %% Create Grid
 if (sizeY == 1)
