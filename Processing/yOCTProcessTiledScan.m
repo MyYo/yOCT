@@ -48,6 +48,7 @@ addRequired(p,'tiledScanInputFolder',@isstr);
 addRequired(p,'outputPath');
 
 % Z position stitching
+addParameter(p,'dispersionQuadraticTerm',79430000,@isnumeric);
 addParameter(p,'focusSigma',20,@isnumeric);
 addParameter(p,'focusPositionInImageZpix',NaN,@isnumeric);
 addParameter(p,'zSetOriginAsFocusOfZDepth0',true);
@@ -106,7 +107,7 @@ end
 json = awsReadJSON([tiledScanInputFolder 'ScanInfo.json']);
 
 %Figure out dispersion parameters
-if ~isfield(in,'dispersionParameterA') || isempty(in.dispersionParameterA)
+if ~isfield(in,'dispersionQuadraticTerm') || isempty(in.dispersionQuadraticTerm)
     if isfield(json.octProbe,'DefaultDispersionParameterA')
         warning('octProbe has dispersionParameterA which is beeing depriciated in favor of dispersionQuadraticTerm. Please adjust probe.ini');
         in.dispersionParameterA = json.octProbe.DefaultDispersionParameterA;
@@ -114,7 +115,11 @@ if ~isfield(in,'dispersionParameterA') || isempty(in.dispersionParameterA)
     else
         in.dispersionQuadraticTerm = json.octProbe.DefaultDispersionQuadraticTerm;
         reconstructConfig = [reconstructConfig {'dispersionQuadraticTerm', in.dispersionQuadraticTerm}];
+        reconstructConfig = [reconstructConfig {'n', json.tissueRefractiveIndex}];
     end
+else
+    reconstructConfig = [reconstructConfig {'dispersionQuadraticTerm', in.dispersionQuadraticTerm}];
+    reconstructConfig = [reconstructConfig {'n', json.tissueRefractiveIndex}];
 end
 
 fp = cellfun(@(x)(awsModifyPathForCompetability([tiledScanInputFolder '\' x '\'])),json.octFolders,'UniformOutput',false);
